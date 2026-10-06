@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Portal - Question Management</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+
+        <header>
+            <h2>Admin Management Control</h2>
+            <button onclick="logout()" class="danger-btn">Logout</button>
+        </header>
+
+        <div class="nav-tabs">
+            <button class="tab-btn active"
+                    id="editorTab"
+                    onclick="switchAdminTab('editor')">
+                Question Editor
+            </button>
+
+            <button class="tab-btn"
+                    id="bankTab"
+                    onclick="switchAdminTab('bank')">
+                Question Bank
+            </button>
+
+            <button class="tab-btn"
+                    id="coursesTab"
+                    onclick="switchAdminTab('courses')">
+                Courses & Modules
+            </button>
+
+            <button class="tab-btn"
+                    id="analyticsTab"
+                    onclick="switchAdminTab('analytics')">
+                Analytics Dashboard
+            </button>
+
+            <button class="tab-btn"
+                    id="usersTab"
+                    onclick="switchAdminTab('users')">
+                User Management
+            </button>
+        </div>
+
+        <!-- QUESTION EDITOR -->
+        <div id="editorView">
+
+            <h3 id="formTitle">Add / Edit Question</h3>
+
+            <div id="adminStatus" class="status-message"></div>
+
+            <form id="questionForm">
+
+                <input type="hidden" id="edit_id">
+
+                <div class="form-group">
+                    <label>Course</label>
+                    <select id="course_id"></select>
+                </div>
+
+                <div class="form-group topic-field">
+                    <label>Topic Name (Type to Filter)</label>
+
+                    <input
+                        type="text"
+                        id="topic"
+                        autocomplete="off"
+                        placeholder="Start typing topic name..."
+                        required
+                    >
+
+                    <div id="topicSuggestions"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Module Number</label>
+
+                    <select id="module_num">
+                        <option value="1">Module 1</option>
+                        <option value="2">Module 2</option>
+                        <option value="3">Module 3</option>
+                        <option value="4">Module 4</option>
+                        <option value="5">Module 5</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Category</label>
+
+                    <select id="category">
+                        <option value="conceptual">Conceptual</option>
+                        <option value="technical_fitb">
+                            Technical (Fill-in-the-blank)
+                        </option>
+                        <option value="technical_error_detection">
+                            Technical (Error detection)
+                        </option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Question Type</label>
+
+                    <select id="question_type">
+                        <option value="multiple_choice">
+                            Multiple Choice
+                        </option>
+
+                        <option value="fill_in_blank">
+                            Fill in the Blank
+                        </option>
+
+                        <option value="identification">
+                            Identification
+                        </option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Question Prompt</label>
+                    <textarea id="question_text" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Code Snippet (Optional)</label>
+
+                    <textarea
+                        id="code_snippet"
+                        style="font-family: monospace;"
+                    ></textarea>
+                </div>
+
+                <div id="dynamicFieldsContainer" class="card"></div>
+
+                <div class="form-group">
+                    <label>Explanation of Correct Answer</label>
+                    <textarea id="explanation" required></textarea>
+                </div>
+
+                <button type="submit" id="saveBtn">
+                    Save Question
+                </button>
+
+                <button
+                    type="button"
+                    id="cancelBtn"
+                    onclick="resetForm()"
+                >
+                    Cancel
+                </button>
+
+            </form>
+
+        </div>
+
+
+        <!-- QUESTION BANK -->
+        <div id="bankView" style="display: none;">
+
+            <h3>Question Bank</h3>
+
+            <div class="card"
+                style="display: flex; gap: 10px; flex-wrap: wrap;">
+
+                <div>
+                    <label>Course</label>
+
+                    <select id="filter_course">
+                        <option value="">All</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label>Module</label>
+
+                    <select id="filter_module">
+                        <option value="">All</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label>Type</label>
+
+                    <select id="filter_type">
+                        <option value="">All</option>
+                        <option value="multiple_choice">
+                            Multiple Choice
+                        </option>
+                        <option value="fill_in_blank">
+                            Fill in Blank
+                        </option>
+                        <option value="identification">
+                            Identification
+                        </option>
+                    </select>
+                </div>
+
+                <div>
+                    <label>Category</label>
+
+                    <select id="filter_category">
+                        <option value="">All</option>
+                        <option value="conceptual">
+                            Conceptual
+                        </option>
+                        <option value="technical_fitb">
+                            Technical (FITB)
+                        </option>
+                        <option value="technical_error_detection">
+                            Technical (Error)
+                        </option>
+                    </select>
+                </div>
+
+                <div>
+                    <label>Sort Topic</label>
+
+                    <select id="filter_sort">
+                        <option value="">None</option>
+                        <option value="asc">A → Z</option>
+                        <option value="desc">Z → A</option>
+                    </select>
+                </div>
+
+            </div>
+
+            <div id="questionsContainer">
+                Loading Question Bank...
+            </div>
+
+        </div>
+
+        <div id="coursesView" style="display: none;">
+            <h3>Courses & Modules</h3>
+            <div class="card courses-header">
+                <div>
+                    <h4>Course Management</h4>
+                    <p>
+                        Manage courses and the modules belonging to each course.
+                    </p>
+                </div>
+
+                <button
+                    type="button"
+                    onclick="openCourseModal()"
+                >
+                    + Add Course
+                </button>
+            </div>
+
+            <div
+                id="courseStatus"
+                class="status-message"
+            ></div>
+
+            <div id="coursesContainer">
+                Loading courses...
+            </div>
+        </div>
+
+        <!-- ANALYTICS -->
+        <div id="analyticsView" style="display: none;">
+
+            <h3>Analytics Dashboard</h3>
+
+            <div id="analyticsSummary"></div>
+
+            <h4>Performance by Module</h4>
+            <div id="moduleAnalytics"></div>
+
+            <h4 style="margin-top: 30px;">
+                Question Performance
+            </h4>
+
+            <div id="questionAnalytics"></div>
+
+        </div>
+
+        <!-- USER MANAGEMENT -->
+        <div id="usersView" style="display: none;">
+
+            <h3>User Management</h3>
+
+            <div class="card">
+                <p>
+                    Manage registered accounts and administrator access.
+                </p>
+            </div>
+
+            <div id="usersContainer">
+                Loading Users...
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- COURSE / MODULE MODAL -->
+    <div
+        id="courseModuleModal"
+        class="admin-modal-overlay"
+    >
+
+        <div class="admin-modal">
+
+            <h3 id="courseModuleModalTitle">
+                Add Course
+            </h3>
+
+            <p
+                id="courseModuleModalDescription"
+                class="admin-modal-description"
+            >
+                Enter the course information.
+            </p>
+
+            <div id="courseModuleModalFields"></div>
+
+            <div
+                id="courseModuleModalError"
+                class="admin-modal-error"
+            ></div>
+
+            <div class="admin-modal-actions">
+
+                <button
+                    type="button"
+                    class="secondary-btn"
+                    onclick="closeCourseModuleModal()"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    type="button"
+                    id="courseModuleModalSave"
+                    onclick="saveCourseModuleModal()"
+                >
+                    Save
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- COURSE DELETE PASSWORD MODAL -->
+    <div
+        id="courseDeletePasswordModal"
+        class="admin-modal-overlay"
+    >
+
+        <div class="admin-modal">
+
+            <h3>Administrator Verification</h3>
+
+            <p class="admin-modal-description">
+                Enter your administrator password to continue
+                with deleting this course.
+            </p>
+
+            <div class="form-group">
+
+                <label for="deleteCoursePassword">
+                    Admin Password
+                </label>
+
+                <input
+                    type="password"
+                    id="deleteCoursePassword"
+                    autocomplete="current-password"
+                >
+
+            </div>
+
+            <div
+                id="courseDeletePasswordError"
+                class="admin-modal-error"
+            ></div>
+
+            <div class="admin-modal-actions">
+
+                <button
+                    type="button"
+                    class="secondary-btn"
+                    onclick="closeCourseDeletePasswordModal()"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    type="button"
+                    onclick="verifyCourseDeletePassword()"
+                >
+                    Continue
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- COURSE DELETE CONFIRMATION MODAL -->
+    <div
+        id="courseDeleteConfirmModal"
+        class="admin-modal-overlay"
+    >
+
+        <div class="admin-modal">
+
+            <h3>Are You Sure?</h3>
+
+            <p
+                id="courseDeleteConfirmText"
+                class="admin-modal-description"
+            ></p>
+
+            <div
+                id="courseDeleteConfirmError"
+                class="admin-modal-error"
+            ></div>
+
+            <div class="admin-modal-actions">
+
+                <button
+                    type="button"
+                    class="secondary-btn"
+                    onclick="closeCourseDeleteConfirmModal()"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    type="button"
+                    class="danger-btn"
+                    onclick="confirmCourseDeletion()"
+                >
+                    Yes, Delete Course
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- SIMPLE DELETE MODAL -->
+    <div
+        id="simpleDeleteModal"
+        class="admin-modal-overlay"
+    >
+        <div class="admin-modal">
+
+            <h3>Confirm Deletion</h3>
+
+            <p
+                id="simpleDeleteText"
+                class="admin-modal-description"
+            ></p>
+
+            <div class="admin-modal-actions">
+
+                <button
+                    type="button"
+                    class="secondary-btn"
+                    onclick="resolveSimpleDelete(false)"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    type="button"
+                    class="danger-btn"
+                    onclick="resolveSimpleDelete(true)"
+                >
+                    Delete
+                </button>
+
+            </div>
+
+        </div>
+    </div>
+
+    <script src="js/admin.js"></script>
+</body>
+</html>

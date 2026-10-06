@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Android Exam System - Login</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container" style="max-width: 400px; margin-top: 100px;">
+
+        <h2>Login Access</h2>
+
+        <div id="loginStatus" class="status-message"></div>
+
+        <!-- LOGIN FORM -->
+        <form id="loginForm">
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="username" required>
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="password" required>
+            </div>
+
+            <button type="submit" style="width: 100%;">
+                Login
+            </button>
+        </form>
+
+        <hr style="margin: 30px 0;">
+
+        <!-- REGISTRATION -->
+        <h2>Create Account</h2>
+
+        <div id="registerStatus" class="status-message"></div>
+
+        <form id="registerForm">
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="registerUsername" required>
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="registerPassword" required>
+            </div>
+
+            <div class="form-group">
+                <label>Confirm Password</label>
+                <input type="password" id="confirmPassword" required>
+            </div>
+
+            <button type="submit" style="width: 100%;">
+                Create Account
+            </button>
+        </form>
+
+    </div>
+
+    <script>
+        function showStatus(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+
+            element.textContent = message;
+            element.className = `status-message ${type} show`;
+        }
+
+        function clearStatus(elementId) {
+            const element = document.getElementById(elementId);
+
+            element.textContent = '';
+            element.className = 'status-message';
+        }
+
+        // LOGIN
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            clearStatus('loginStatus');
+
+            try {
+                const res = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: document.getElementById('username').value,
+                        password: document.getElementById('password').value
+                    })
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    localStorage.setItem(
+                        'user',
+                        JSON.stringify(data.user)
+                    );
+
+                    window.location.href =
+                        data.user.role === 'admin'
+                            ? 'admin.html'
+                            : 'exam.html';
+                } else {
+                    showStatus(
+                        'loginStatus',
+                        data.message || 'Unable to log in.',
+                        'error'
+                    );
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+
+                showStatus(
+                    'loginStatus',
+                    'Unable to connect to the server.',
+                    'error'
+                );
+            }
+        });
+
+        // REGISTRATION
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            clearStatus('registerStatus');
+
+            const username =
+                document.getElementById('registerUsername').value;
+
+            const password =
+                document.getElementById('registerPassword').value;
+
+            const confirmPassword =
+                document.getElementById('confirmPassword').value;
+
+            if (password !== confirmPassword) {
+                showStatus(
+                    'registerStatus',
+                    'Passwords do not match.',
+                    'error'
+                );
+
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        password: password
+                    })
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    showStatus(
+                        'registerStatus',
+                        'Account created successfully. You can now log in.',
+                        'success'
+                    );
+
+                    document.getElementById('registerForm').reset();
+
+                    document.getElementById('username').value =
+                        username;
+
+                    document.getElementById('password').value = '';
+                } else {
+                    showStatus(
+                        'registerStatus',
+                        data.message || 'Unable to create account.',
+                        'error'
+                    );
+                }
+            } catch (error) {
+                console.error('Registration error:', error);
+
+                showStatus(
+                    'registerStatus',
+                    'Unable to connect to the server.',
+                    'error'
+                );
+            }
+        });
+    </script>
+</body>
+</html>

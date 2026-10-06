@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Android Exam Portal</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h2>Student Exam Portal</h2>
+            <button onclick="logout()" class="danger-btn">Logout</button>
+        </header>
+
+        <!-- Navigation Tabs (Hidden during active exam) -->
+        <div class="nav-tabs" id="portalTabs">
+            <button class="tab-btn active" id="examTab" onclick="switchTab('exam')">Take Exam</button>
+            <button class="tab-btn" id="profileTab" onclick="switchTab('profile')">User Profile</button>
+        </div>
+
+        <!-- Tab 1: Exam Configuration & Session -->
+        <div id="examView">
+            <div id="setupSection">
+                <h3>Configure Exam Session</h3>
+                
+                <div class="form-group">
+                    <label>Select Course</label>
+                    <select id="user_course_id"></select>
+                </div>
+
+                <div class="form-group">
+                    <label>Select Modules</label>
+
+                    <div class="checkbox-group" id="moduleCheckboxGroup">
+                        <label class="checkbox-label">
+                            <input
+                                type="checkbox"
+                                id="mod_all"
+                                checked
+                            >
+                            <strong>Select All</strong>
+                        </label>
+
+                        <div id="moduleCheckboxes" class="module-checkboxes">
+                            Loading modules...
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Select Question Types</label>
+                    <div class="checkbox-group">
+                        <label class="checkbox-label"><input type="checkbox" id="type_all" checked> <strong>Select All</strong></label>
+                        <label class="checkbox-label"><input type="checkbox" name="type_cb" value="multiple_choice" checked> Multiple Choice</label>
+                        <label class="checkbox-label"><input type="checkbox" name="type_cb" value="fill_in_blank" checked> Fill in Blank</label>
+                        <label class="checkbox-label"><input type="checkbox" name="type_cb" value="identification" checked> Identification</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Number of Questions</label>
+                    <input type="number" id="limit" value="5" min="1" max="20">
+                </div>
+
+                <button onclick="startExam()">Start Iteration</button>
+            </div>
+
+            <!-- Active Exam Step (Sidebar Navigation + Question Viewer) -->
+            <div id="examSection" style="display: none;">
+                <div id="examStatus" class="status-message"></div>
+                <div class="exam-layout">
+                    <div class="exam-nav-sidebar">
+                        <h4>Questions</h4>
+                        <div class="nav-grid" id="questionNavGrid"></div>
+                    </div>
+
+                    <div class="exam-main">
+                        <div id="singleQuestionContainer"></div>
+                        <div style="display: flex; gap: 10px; margin-top: 15px;">
+                            <button id="prevBtn" onclick="navigateQuestion(-1)">
+                                Previous
+                            </button>
+
+                            <button id="nextBtn" onclick="navigateQuestion(1)">
+                                Next
+                            </button>
+
+                            <button
+                                id="checkAnswerBtn"
+                                onclick="checkCurrentAnswer()"
+                                style="background: var(--panel-border);">
+                                Check Answer
+                            </button>
+
+                            <button
+                                id="finishBtn"
+                                onclick="submitExam()"
+                                style="margin-left: auto; background: var(--success);">
+                                Finish & Submit
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Exam Summary View (Donut Charts + Detailed Review) -->
+            <div id="summarySection" style="display: none;">
+                <button onclick="resetExamPortal()" style="margin-bottom: 20px;">Return</button>
+                <h3>Exam Results Summary</h3>
+                
+                <div style="display: flex; gap: 20px; flex-wrap: wrap;" id="summaryChartsContainer"></div>
+
+                <h4 style="margin-top: 30px;">Exam Review</h4>
+                <div id="canvasReviewList"></div>
+            </div>
+        </div>
+
+        <!-- Tab 2: User Profile Dashboard -->
+        <div id="profileView" style="display: none;">
+            <h3>User Performance Analytics</h3>
+            <div id="profileStatus" class="status-message"></div>
+            <div id="overallProfileContainer" class="card">
+                <h3>Performance Over Time</h3>
+                <div class="performance-chart-container">
+                    <canvas id="performanceChart"></canvas>
+                </div>
+                <div id="questionBankProgress" class="profile-question-count"></div>
+            </div>
+            <h4 style="margin-top: 25px;">Module Mastery Breakdown</h4>
+            <div id="moduleBreakdownList">Loading performance breakdown...</div>
+        </div>
+    </div>
+
+    <script src="/vendor/chart.js/chart.umd.js"></script>
+    <script src="js/user.js"></script>
+</body>
+</html>
